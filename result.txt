@@ -1,0 +1,1 @@
+insert into comment (product_id, comment_id, referenceName, creationTime, content, attribute) values ('TM_538207238901', '291037048707', '网络类型:无需合约版;机身颜色:黑色;套餐类型:官方标配;存储容量:128GB', '2016-11-10 12:26:26', '发货很快，服务很到位。 好' '{"userlevel": 0, "appendComment": "", "auctionPrice": "", "aliMallSeller": false}')
