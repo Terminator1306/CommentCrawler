@@ -8,6 +8,8 @@ import HTMLParser
 
 class TmallSpider(scrapy.Spider):
     name = "Tmall"
+    pages = 0
+    maxpage = 10
     allowed_domains = ["tmall.com"]
     start_urls = {
         'phone':"https://list.tmall.com/search_product.htm?spm=a220m.1000858.0.0.muAm62&cat=50024400&q=%CA%D6%BB%FA&sort=s&style=g&search_condition=7&from=sn_1_rightnav&industryCatId=50024400#J_crumbs",
@@ -43,6 +45,7 @@ class TmallSpider(scrapy.Spider):
         sel = scrapy.Selector(response)
         items = sel.xpath('//div[@class="product  "]')
         next_page = sel.xpath('//a[@class="ui-page-next"]/@href').extract()
+        self.pages = self.pages+1
         # print len(items)
         for item in items:
             # item = items[0]
@@ -55,7 +58,7 @@ class TmallSpider(scrapy.Spider):
                 cookies=self.cookies,
                 callback=self.CommentCountParse
                 )
-        if len(next_page)>0:
+        if len(next_page)>0 and self.pages < self.maxpage:
             yield scrapy.Request(
                 url="https://list.tmall.com/search_product.htm"+next_page[0],
                 callback = self.parse,
@@ -131,7 +134,7 @@ class TmallSpider(scrapy.Spider):
         product['category'] = response.meta['cat']
         yield product
 
-        limit = 99
+        limit = 20
         pages = int(response.meta['comment_count'])/20+1 
         if pages > limit:
             pages = limit
