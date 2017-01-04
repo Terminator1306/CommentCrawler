@@ -16,7 +16,7 @@ class Product(scrapy.Item):
     price = scrapy.Field()
     category = scrapy.Field()
     name = scrapy.Field()
-    commentTag = scrapy.Field()
+    # commentTag = scrapy.Field()
     attribute = scrapy.Field()
 
 

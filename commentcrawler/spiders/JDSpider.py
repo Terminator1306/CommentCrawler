@@ -54,8 +54,8 @@ class JDSpider(scrapy.Spider):
                 dd = sel.xpath('//div[@id="detail-param"]//tr/td[2]/text()').extract()
 
             if len(dt) == 0:
-            	dt = sel.xpath('//table[@class="Ptable"]//tr/td[1]/text()').extract()
-            	dd = sel.xpath('//table[@class="Ptable"]//tr/td[2]/text()').extract()
+                dt = sel.xpath('//table[@class="Ptable"]//tr/td[1]/text()').extract()
+                dd = sel.xpath('//table[@class="Ptable"]//tr/td[2]/text()').extract()
 
             lenth = len(dd)
             if len(dt)<lenth:

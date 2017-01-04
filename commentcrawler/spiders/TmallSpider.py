@@ -39,13 +39,12 @@ class TmallSpider(scrapy.Spider):
     def start_requests(self):
         for k,v in self.start_urls.iteritems():
             yield scrapy.Request(v,cookies=self.cookies,callback=self.parse,meta={'cat':k})
-    
 
     def parse(self, response):
         sel = scrapy.Selector(response)
         items = sel.xpath('//div[@class="product  "]')
         next_page = sel.xpath('//a[@class="ui-page-next"]/@href').extract()
-        self.pages = self.pages+1
+        self.pages += 1
         # print len(items)
         for item in items:
             # item = items[0]
@@ -79,7 +78,6 @@ class TmallSpider(scrapy.Spider):
             callback=self.CommentTagParse
             )
 
-
     def CommentTagParse(self,response):
         sel = scrapy.Selector(response)
         body = '{' + sel.xpath("//body//text()").extract()[0] + "}"
@@ -96,7 +94,6 @@ class TmallSpider(scrapy.Spider):
             cookies=self.cookies,
             callback=self.ProductParse
             )
-
 
     def ProductParse(self,response):
         sel = scrapy.Selector(response)
@@ -145,7 +142,6 @@ class TmallSpider(scrapy.Spider):
             cookies=self.cookies,
             callback=self.CommentParse
             )
-
 
     def CommentParse(self,response):
         sel = scrapy.Selector(response)
