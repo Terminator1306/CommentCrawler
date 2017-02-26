@@ -26,7 +26,9 @@ class ZolSpider(scrapy.Spider):
                 )
         if len(next_page) > 0:
             yield scrapy.Request(
-                url=self.main_url + next_page
+                url=self.main_url + next_page[0],
+                dont_filter=True,
+                callback=self.parse
             )
 
     def nameparse(self, response):
@@ -44,7 +46,6 @@ class ZolSpider(scrapy.Spider):
             price = 'null'
         comment_count = sel.xpath("//div[@class='total-num']/span/text()").extract()[0][:-3]
         para_url = sel.xpath("//div[@class='section-header']/a/@href").extract()[0]
-        comment_url = sel.xpath("//a[@class='ol-comment']/@href").extract()[0]
         # get product's parameter
         yield scrapy.Request(
             url=self.main_url+para_url,
@@ -64,6 +65,7 @@ class ZolSpider(scrapy.Spider):
 
     def paraparse(self, response):
         sel = scrapy.Selector(response)
+        viewpage = sel.xpath("//a[@class='ol-comment']/@href").extract()[0]
         tables = sel.xpath("//div[@class='param-table']/table")
         attributes = {}
         for table in tables:
@@ -84,17 +86,21 @@ class ZolSpider(scrapy.Spider):
         product['price'] = response.meta['price']
         product['attribute'] = attributes
         product['commentTag'] = ''
-        yield product
+        yield scrapy.Request(
+            url=self.main_url+viewpage,
+            meta={"product": product},
+            callback=self.commenttagparse
+        )
+
+    def commenttagparse(self, response):
+        sel = scrapy.Selector(response)
+        word_list = sel.xpath("//ul[@class='words-list clearfix']/li/a/@title").extract()
+        response.meta['product']['commentTag'] = word_list
+        yield response.meta['product']
 
     def commentparse(self, response):
         sel = scrapy.Selector(response)
-        # body = sel.xpath("//body").extract()[0]
-
-        # ul = sel.xpath("//ul").extract()[0]
-        # comment_set = sel.xpath("//li[@class='\\\"comment-item']")
         comment_set = sel.xpath("//li[starts-with(@class, '\\\"comment-item')]")
-        # with open("result.txt", "w") as f:
-        #     f.write(str(comment_set.extract()))
         for item in comment_set:
             good = item.xpath(".//strong[@class='\\\"good\\\"']/p/span/text()").extract()
             good = "".join(good).decode('string_escape')
@@ -128,11 +134,3 @@ class ZolSpider(scrapy.Spider):
                 summary_comment['orientation'] = 0
                 summary_comment['product_id'] = response.meta['product_id']
                 yield summary_comment
-            # with open("result.txt", "a") as f:
-            #     f.write(str(good.decode('unicode-escape').encode('utf-8')))
-                # f.write(str(bad))
-                # f.write(str(summary))
-        # comment = zol_Comment()
-
-
-
