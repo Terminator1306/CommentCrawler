@@ -16,7 +16,7 @@ class Product(scrapy.Item):
     price = scrapy.Field()
     category = scrapy.Field()
     name = scrapy.Field()
-    # commentTag = scrapy.Field()
+    commentTag = scrapy.Field()
     attribute = scrapy.Field()
 
 
@@ -46,7 +46,6 @@ class Lost(scrapy.Item):
 
 class zol_Comment(scrapy.Item):
     item_type = scrapy.Field()
-    good = scrapy.Field()
-    bad = scrapy.Field()
-    summary = scrapy.Field()
-    score = scrapy.Field()
+    content = scrapy.Field()
+    orientation = scrapy.Field()
+    product_id = scrapy.Field()
