@@ -40,6 +40,7 @@ class ZolSpider(scrapy.Spider):
         model = sel.xpath("//div[@class='breadcrumb']/span/text()").extract()[0]
         name = sel.xpath("//div[@class='page-title clearfix']/h1/text()").extract()[0]
         price = sel.xpath("//span[@id='J_PriceTrend']/b[@class='price-type price-retain']/text()").extract()
+        comment_url = sel.xpath("//a[@class='ol-comment']/@href").extract()[0]
         if len(price) > 0:
             price = price[0]
         else:
@@ -62,6 +63,17 @@ class ZolSpider(scrapy.Spider):
                       "name": name, "price": price, "comment_count":comment_count},
                 callback=self.commentparse
             )
+        # yield scrapy.Request(
+        #     url=self.main_url+comment_url,
+        #     callback= self.commentparse,
+        #     meta={
+        #         "splash": {
+        #             'endpoint': 'render.html'
+        #         },
+        #         "brand": brand, "model": model, "product_id": product_id,
+        #         "name": name, "price": price, "comment_count":comment_count
+        #     }
+        # )
 
     def paraparse(self, response):
         sel = scrapy.Selector(response)
@@ -101,36 +113,53 @@ class ZolSpider(scrapy.Spider):
     def commentparse(self, response):
         sel = scrapy.Selector(response)
         comment_set = sel.xpath("//li[starts-with(@class, '\\\"comment-item')]")
+        comment_set1 = sel.xpath("//ul[@class='comment-list']/li")
+
         for item in comment_set:
             good = item.xpath(".//strong[@class='\\\"good\\\"']/p/span/text()").extract()
             good = "".join(good).decode('string_escape')
             good.replace('\\n', '')
-            if len(good) != 0:
-                good_comment = zol_Comment()
-                good_comment['item_type'] = 'zol_comment'
-                good_comment['content'] = good.decode('unicode-escape')
-                good_comment['orientation'] = 1
-                good_comment['product_id'] = response.meta['product_id']
-                yield good_comment
 
             bad = item.xpath(".//strong[@class='\\\"bad\\\"']/p/span/text()").extract()
             bad = "".join(bad).decode('string_escape')
             bad.replace('\\n', '')
-            if len(bad) != 0:
-                bad_comment = zol_Comment()
-                bad_comment['product_id'] = response.meta['product_id']
-                bad_comment['content'] = bad.decode('unicode-escape')
-                bad_comment['orientation'] = -1
-                bad_comment['item_type'] = 'zol_comment'
-                yield bad_comment
 
             summary = item.xpath(".//strong[@class='\\\"summary\\\"']/p/span/text()").extract()
             summary = "".join(summary).decode('string_escape')
             summary.replace('\\n', '')
-            if len(summary) != 0:
-                summary_comment = zol_Comment()
-                summary_comment['item_type'] = 'zol_comment'
-                summary_comment['content'] = summary.decode('unicode-escape')
-                summary_comment['orientation'] = 0
-                summary_comment['product_id'] = response.meta['product_id']
-                yield summary_comment
+
+            user = item.xpath(".//div[@class='\\\"comments-user-name\\\"']/span//text()").extract()[0]
+            user = user.decode('string_escape')
+            user.replace('\\n', '')
+
+            date = item.xpath(".//span[@class='\\\"date\\\"']//text()").extract()[0]
+            date = date.decode('string_escape')
+            date.replace('\\n', '')
+
+            helpful = item.xpath(".//i[@class='\\\"icon-zan\\\"']//text()").extract()
+            if len(helpful) > 0:
+                helpful = helpful[0].decode('string_escape')
+                helpful.replace('\\n', '')
+            else:
+                helpful = ''
+
+            helpless = item.xpath(".//i[@class='\\\"icon-cai\\\"']//text()").extract()
+            if len(helpless) > 0:
+                helpless = helpless[0].decode('string_escape')
+                helpless.replace('\\n', '')
+            else:
+                helpless = ''
+
+            # print user, date
+
+            comment = zol_Comment()
+            comment['item_type'] = 'zol_comment'
+            comment['good'] = good.decode('unicode-escape')
+            comment['bad'] = bad.decode('unicode-escape')
+            comment['summary'] = summary.decode('unicode-escape')
+            comment['product_id'] = response.meta['product_id']
+            comment['user'] = user.decode('unicode-escape')
+            comment['date'] = date
+            comment['helpful'] = helpful.decode('unicode-escape')
+            comment['helpless'] = helpless.decode('unicode-escape')
+            yield comment

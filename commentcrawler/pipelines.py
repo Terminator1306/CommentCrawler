@@ -80,7 +80,7 @@ class Pipeline(object):
         #         sql = "insert into lost (product_id, page, url, valid) values ('%s', '%s', '%s', '%s')"%(item['product_id'],item['page'],item['url'],item['valid'])
         #         tx.execute(sql)
         elif item['item_type'] == 'zol_comment':
-            sql = "insert into pos_neg (product_id, content, orientation) values ('%s', '%s', '%s')" % (item['product_id'], item['content'], item['orientation'])
+            sql = "insert into pos_neg (product_id, good, bad, summary, user, date, helpful, helpless) values ('%s','%s','%s','%s','%s','%s','%s', '%s')" % (item['product_id'], item['good'], item['bad'], item['summary'], item['user'], item['date'], item['helpful'], item['helpless'])
             tx.execute(sql)
 
  
